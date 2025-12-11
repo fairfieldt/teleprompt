@@ -39,3 +39,20 @@ jobs:
 
       - name: cargo clippy
         run: cargo clippy --all-targets
+
+      - name: cargo build (release)
+        run: cargo build --release
+
+      - name: Upload binary artifact (non-Windows)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleprompt-${{ runner.os }}
+          path: target/release/teleprompt
+
+      - name: Upload binary artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleprompt-${{ runner.os }}
+          path: target/release/teleprompt.exe
