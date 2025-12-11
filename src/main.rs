@@ -21,9 +21,13 @@ struct Args {
     #[arg(long)]
     out_file: Option<PathBuf>,
 
-    /// Config file path. If omitted, defaults to $HOME/.teleprompt
+    /// Config file path. If omitted, defaults to the platform config path (see --print-config-path).
     #[arg(long)]
     config: Option<PathBuf>,
+
+    /// Print the resolved config path and exit.
+    #[arg(long)]
+    print_config_path: bool,
 }
 
 #[tokio::main]
@@ -36,13 +40,17 @@ async fn main() {
 
 async fn run() -> anyhow::Result<()> {
     let args = Args::parse();
-
-    let message = read_prompt_message(&args)?;
-
     let config_path = match &args.config {
         Some(p) => p.clone(),
         None => config::default_config_path()?,
     };
+
+    if args.print_config_path {
+        println!("{}", config_path.display());
+        return Ok(());
+    }
+
+    let message = read_prompt_message(&args)?;
     let cfg = config::load(&config_path)?;
 
     let client = telegram::TelegramClient::new(cfg.bot_token);
@@ -162,6 +170,7 @@ mod tests {
             message: Some("  hello  ".to_string()),
             out_file: None,
             config: None,
+            print_config_path: false,
         };
         let msg = read_prompt_message(&args).unwrap();
         assert_eq!(msg, "hello");
@@ -173,6 +182,7 @@ mod tests {
             message: Some("   ".to_string()),
             out_file: None,
             config: None,
+            print_config_path: false,
         };
         let err = read_prompt_message(&args).unwrap_err();
         let msg = err.to_string();
@@ -189,6 +199,7 @@ mod tests {
             message: None,
             out_file: Some(path.clone()),
             config: None,
+            print_config_path: false,
         };
 
         write_reply(&args, "first").unwrap();

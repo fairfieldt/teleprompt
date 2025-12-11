@@ -29,7 +29,12 @@ AFK OFF
 ```
 
 ## Setup
-Create a config file at `$HOME/.teleprompt`:
+Create a config file at the default config path (you can print it with `teleprompt --print-config-path`).
+
+Typical defaults:
+- Linux: `$XDG_CONFIG_HOME/teleprompt/config.toml` (or `~/.config/teleprompt/config.toml`)
+- macOS: `~/Library/Application Support/teleprompt/config.toml`
+- Windows: `%APPDATA%\\teleprompt\\config.toml`
 
 ```toml
 bot_token = "123456:ABCDEF..."

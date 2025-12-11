@@ -21,14 +21,17 @@ If neither is provided, the program exits with an error.
 - `--message <STRING>`: prompt message.
 - `--out-file <PATH>`: where to write the reply.
 - `--config <PATH>`: config file path.
+- `--print-config-path`: print the resolved config path and exit.
 
 ## Config
 
 ### Default path
-- `$HOME/.teleprompt`
+- Linux: `$XDG_CONFIG_HOME/teleprompt/config.toml` (or `~/.config/teleprompt/config.toml`)
+- macOS: `~/Library/Application Support/teleprompt/config.toml`
+- Windows: `%APPDATA%\\teleprompt\\config.toml`
 
 ### Format
-TOML (even though the filename has no extension).
+TOML.
 
 ### Fields
 - `bot_token` (string, required): Telegram bot token.
