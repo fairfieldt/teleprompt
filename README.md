@@ -11,14 +11,19 @@ user_id = 123456789
 timeout_minutes = 60
 ```
 
-For development, you can keep a repo-local config (and avoid putting secrets in `$HOME/.teleprompt` while iterating):
+### Getting a bot token and your user id
 
-```bash
-cp teleprompt.dev.toml.example teleprompt.dev.toml
-$EDITOR teleprompt.dev.toml
-```
+1. Create a bot via BotFather
 
-`teleprompt.dev.toml` is gitignored.
+  - In Telegram, start chat with @BotFather.
+
+  - /newbot → follow prompts → you get a token like:
+  `1234567890:AAH-xxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+
+
+2. Get your own Telegram user ID
+
+  - use a helper bot like @userinfobot or @userinfobot alternatives.
 
 ## Usage
 Message via flag:
@@ -37,10 +42,4 @@ Write reply to a file:
 
 ```bash
 teleprompt --message "ship it?" --out-file reply.txt
-```
-
-Use a repo-local config (handy for development):
-
-```bash
-teleprompt --config ./teleprompt.dev.toml --message "ping"
 ```
