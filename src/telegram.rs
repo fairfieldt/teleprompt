@@ -199,4 +199,63 @@ mod tests {
         };
         assert_eq!(extract_text_reply(&no_text, 123), None);
     }
+
+    #[test]
+    fn api_response_into_result_ok_requires_result() {
+        let res = ApiResponse::<i64> {
+            ok: true,
+            result: None,
+            description: None,
+            error_code: None,
+        };
+
+        let err = res.into_result().unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("missing result despite ok=true"),
+            "error was: {msg}"
+        );
+    }
+
+    #[test]
+    fn api_response_into_result_error_includes_code_and_description() {
+        let res = ApiResponse::<i64> {
+            ok: false,
+            result: None,
+            description: Some("nope".to_string()),
+            error_code: Some(400),
+        };
+
+        let err = res.into_result().unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("telegram api error 400: nope"), "error was: {msg}");
+    }
+
+    #[test]
+    fn api_response_into_result_error_defaults_description_and_code() {
+        let res = ApiResponse::<i64> {
+            ok: false,
+            result: None,
+            description: None,
+            error_code: None,
+        };
+
+        let err = res.into_result().unwrap_err();
+        let msg = err.to_string();
+        assert!(
+            msg.contains("telegram api error 0: unknown telegram error"),
+            "error was: {msg}"
+        );
+    }
+
+    #[test]
+    fn method_url_includes_base_url_token_and_method() {
+        let mut client = TelegramClient::new("TOKEN".to_string());
+        client.base_url = "https://example.test".to_string();
+
+        assert_eq!(
+            client.method_url("getUpdates"),
+            "https://example.test/botTOKEN/getUpdates"
+        );
+    }
 }

@@ -116,3 +116,60 @@ fn write_reply(args: &Args, reply: &str) -> anyhow::Result<()> {
     out.flush()?;
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn unique_temp_path(path: &str) -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time after unix epoch")
+            .as_nanos();
+        let pid = std::process::id();
+        std::env::temp_dir()
+            .join(format!("teleprompt_test_{pid}_{nanos}"))
+            .join(path)
+    }
+
+    #[test]
+    fn read_prompt_message_trims_message_flag() {
+        let args = Args {
+            message: Some("  hello  ".to_string()),
+            out_file: None,
+            config: None,
+        };
+        let msg = read_prompt_message(&args).unwrap();
+        assert_eq!(msg, "hello");
+    }
+
+    #[test]
+    fn read_prompt_message_rejects_empty_message_flag() {
+        let args = Args {
+            message: Some("   ".to_string()),
+            out_file: None,
+            config: None,
+        };
+        let err = read_prompt_message(&args).unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("--message was provided but empty"), "error was: {msg}");
+    }
+
+    #[test]
+    fn write_reply_writes_and_overwrites_out_file_creating_parent_dir() {
+        let path = unique_temp_path("nested/reply.txt");
+        let args = Args {
+            message: None,
+            out_file: Some(path.clone()),
+            config: None,
+        };
+
+        write_reply(&args, "first").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "first");
+
+        write_reply(&args, "second").unwrap();
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), "second");
+    }
+}
