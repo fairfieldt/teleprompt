@@ -65,7 +65,20 @@ async fn run() -> anyhow::Result<()> {
         let long_poll = remaining.min(Duration::from_secs(30));
         let long_poll_s = long_poll.as_secs();
 
-        let updates = client.get_updates(offset, long_poll_s).await?;
+        // Ensure the overall configured timeout is a hard deadline, even if the HTTP request
+        // hangs longer than the long-poll timeout.
+        let request_timeout = (long_poll + Duration::from_secs(5)).min(remaining);
+
+        let updates = match tokio::time::timeout(request_timeout, client.get_updates(offset, long_poll_s)).await {
+            Ok(res) => res?,
+            Err(_) => {
+                // If we hit the overall deadline, treat this as the normal "no reply" timeout.
+                if request_timeout == remaining {
+                    break;
+                }
+                anyhow::bail!("telegram getUpdates timed out")
+            }
+        };
 
         for update in &updates {
             offset = update.update_id + 1;

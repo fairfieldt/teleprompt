@@ -4,6 +4,14 @@ use serde::Deserialize;
 
 const DEFAULT_BASE_URL: &str = "https://api.telegram.org";
 
+fn redact_token(text: &str, token: &str) -> String {
+    // If token is empty, `replace` would insert <redacted> between every character.
+    if token.is_empty() {
+        return text.to_string();
+    }
+    text.replace(token, "<redacted>")
+}
+
 pub struct TelegramClient {
     http: reqwest::Client,
     base_url: String,
@@ -23,6 +31,13 @@ impl TelegramClient {
         format!("{}/bot{}/{}", self.base_url, self.token, method)
     }
 
+    fn reqwest_error(&self, method: &str, e: reqwest::Error) -> anyhow::Error {
+        // reqwest::Error Display often includes the full request URL; for Telegram this
+        // contains the bot token, so we must redact it.
+        let msg = redact_token(&e.to_string(), &self.token);
+        anyhow::anyhow!("telegram request failed: method={method}: {msg}")
+    }
+
     async fn post_json<T: DeserializeOwned>(&self, method: &str, body: serde_json::Value) -> Result<T> {
         let url = self.method_url(method);
 
@@ -32,13 +47,13 @@ impl TelegramClient {
             .json(&body)
             .send()
             .await
-            .with_context(|| format!("telegram request failed: {method}"))?;
+            .map_err(|e| self.reqwest_error(method, e))?;
 
         let status = res.status();
         let text = res
             .text()
             .await
-            .with_context(|| format!("read telegram response body: {method}"))?;
+            .map_err(|e| self.reqwest_error(method, e))?;
 
         if !status.is_success() {
             bail!("telegram http error: method={method} status={status} body={text}");
