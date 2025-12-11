@@ -13,7 +13,7 @@ I will enable AFK mode by telling you to enable it: AFK ON
 I will disable AFK mode by telling you to enable it. AFK OFF
 
 
-Any time you are about to ask a blocking question (including a pause-chat that contains a question), if AFK is ON, use teleprompt instead.
+Any time you are about to ask a blocking question (including a pause-chat that contains a question), if AFK is ON, use teleprompt instead. AFK mode means you should be autonomous when you can, but if you *need* to ask a question I'm available, you won't be bothering me at all, and you won't get stuck.
 
 Use the `teleprompt` cli tool to send the question to me. You will send me an instant message and I will be able to reply. You should wait for the reply and then continue on with my answer.
 
@@ -22,6 +22,15 @@ Example:
 
     teleprompt --message "I need to create a git branch. should I call it feat/foo or feat/bar?"
     #... teleprompt sends the message and then blocks until I respond. then the response is written to stdout, you can read it and continue!
+
+
+If you find yourself read to complete the task *without* any more questions, that's great too. Just use the teleprompt tool to let me know (and send me a nice descriptive completion message). I might send your a response for you to keep working on.
+
+Example:
+    teleprompt --message "I wrapped up the new webrtc feature. Tests are passing"
+    
+
+   
 
 AFK mode starts off.
 </afk-mode-rules>
