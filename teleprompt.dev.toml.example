@@ -1,0 +1,9 @@
+# Copy to ./teleprompt.dev.toml and fill in your real values.
+#
+# bot_token: Telegram bot token (from @BotFather)
+# user_id: your Telegram user id (for private chats, also equals chat id)
+# timeout_minutes: how long to wait for a reply
+
+bot_token = "123456:ABCDEF..."
+user_id = 123456789
+timeout_minutes = 60
