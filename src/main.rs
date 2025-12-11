@@ -7,7 +7,11 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 #[derive(Parser, Debug)]
-#[command(name = "teleprompt", version, about = "Telegram prompt/response relay CLI")]
+#[command(
+    name = "teleprompt",
+    version,
+    about = "Telegram prompt/response relay CLI"
+)]
 struct Args {
     /// Message text to send. If omitted, the message is read from stdin.
     #[arg(long)]
@@ -69,16 +73,19 @@ async fn run() -> anyhow::Result<()> {
         // hangs longer than the long-poll timeout.
         let request_timeout = (long_poll + Duration::from_secs(5)).min(remaining);
 
-        let updates = match tokio::time::timeout(request_timeout, client.get_updates(offset, long_poll_s)).await {
-            Ok(res) => res?,
-            Err(_) => {
-                // If we hit the overall deadline, treat this as the normal "no reply" timeout.
-                if request_timeout == remaining {
-                    break;
+        let updates =
+            match tokio::time::timeout(request_timeout, client.get_updates(offset, long_poll_s))
+                .await
+            {
+                Ok(res) => res?,
+                Err(_) => {
+                    // If we hit the overall deadline, treat this as the normal "no reply" timeout.
+                    if request_timeout == remaining {
+                        break;
+                    }
+                    anyhow::bail!("telegram getUpdates timed out")
                 }
-                anyhow::bail!("telegram getUpdates timed out")
-            }
-        };
+            };
 
         for update in &updates {
             offset = update.update_id + 1;
@@ -102,7 +109,9 @@ fn read_prompt_message(args: &Args) -> anyhow::Result<String> {
     }
 
     if std::io::stdin().is_terminal() {
-        anyhow::bail!("No --message provided and stdin is a terminal; pipe a message via stdin or pass --message.");
+        anyhow::bail!(
+            "No --message provided and stdin is a terminal; pipe a message via stdin or pass --message."
+        );
     }
 
     let mut raw = String::new();
@@ -167,7 +176,10 @@ mod tests {
         };
         let err = read_prompt_message(&args).unwrap_err();
         let msg = err.to_string();
-        assert!(msg.contains("--message was provided but empty"), "error was: {msg}");
+        assert!(
+            msg.contains("--message was provided but empty"),
+            "error was: {msg}"
+        );
     }
 
     #[test]

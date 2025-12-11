@@ -1,6 +1,6 @@
-use anyhow::{bail, Context, Result};
-use serde::de::DeserializeOwned;
+use anyhow::{Context, Result, bail};
 use serde::Deserialize;
+use serde::de::DeserializeOwned;
 
 const DEFAULT_BASE_URL: &str = "https://api.telegram.org";
 
@@ -38,7 +38,11 @@ impl TelegramClient {
         anyhow::anyhow!("telegram request failed: method={method}: {msg}")
     }
 
-    async fn post_json<T: DeserializeOwned>(&self, method: &str, body: serde_json::Value) -> Result<T> {
+    async fn post_json<T: DeserializeOwned>(
+        &self,
+        method: &str,
+        body: serde_json::Value,
+    ) -> Result<T> {
         let url = self.method_url(method);
 
         let res = self
@@ -243,7 +247,10 @@ mod tests {
 
         let err = res.into_result().unwrap_err();
         let msg = err.to_string();
-        assert!(msg.contains("telegram api error 400: nope"), "error was: {msg}");
+        assert!(
+            msg.contains("telegram api error 400: nope"),
+            "error was: {msg}"
+        );
     }
 
     #[test]
